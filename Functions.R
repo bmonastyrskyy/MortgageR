@@ -24,13 +24,13 @@ interestPerMonth <- function(loan = 250000.00, APR = 4.0){
 #      payment - payment per month (default = NULL)
 # return :
 #      payment, debt, interest: per month
-mortgagePaymentFixed <- function(loan = 250000.00, APR = 4.0, period = 360, payment = NULL){
+mortgagePaymentFixed <- function(loan = 250000.00, APR = 4.0, period = 360, payment = NA){
   loan <- as.double(loan)
   APR <- as.double(APR)
   debt <- c(loan) # debt variable starts from the beginning of the first month
   interest <- c(0)
   minpayment <- round(loan*(APR/1200 * (1+APR/1200)^period)/((1+APR/1200)^period-1),2);
-  if(is.null(payment)){
+  if(is.null(payment) | is.na(payment)){
     payment <- round(loan*(APR/1200 * (1+APR/1200)^period)/((1+APR/1200)^period-1),2)
     payment <- c(0, rep(payment, period) )
   } else {
