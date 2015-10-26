@@ -1,3 +1,8 @@
+# Author : Bohdan Monastyrskyy
+# Date : 2015-10-26
+# Description : shiny web-interface of MortgageR project
+
+
 library("shiny")
 
 source("Functions.R")
