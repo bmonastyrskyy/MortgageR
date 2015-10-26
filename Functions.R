@@ -26,7 +26,13 @@ interestPerMonth <- function(loan = 250000.00, APR = 4.0){
 #      payment, debt, interest: per month
 mortgagePaymentFixed <- function(loan = 250000.00, APR = 4.0, period = 360, payment = NA){
   loan <- as.double(loan)
-  APR <- as.double(APR)
+  if (!is.numeric(loan) ){
+    loan = 250000.0; # set default
+  }
+  suppressWarnings(APR <- as.double(APR))
+  if (is.na(APR[1])){
+    APR <- 4.0; # set default
+  }
   debt <- c(loan) # debt variable starts from the beginning of the first month
   interest <- c(0)
   minpayment <- round(loan*(APR/1200 * (1+APR/1200)^period)/((1+APR/1200)^period-1),2);
@@ -73,17 +79,60 @@ mortgagePaymentFixed <- function(loan = 250000.00, APR = 4.0, period = 360, paym
 #      payment - payment per month (default = NULL)
 # return :
 #      payment, debt, interest: per month
-mortgagePaymentAdjusted <- function(loan = 250000.00, APR = 4.0, period = 360, breaks = NULL, payment = NULL){
+mortgagePaymentAdjusted <- function(loan = 250000.00, APR = 4.0, period = 360, breaks = NULL, payment = NA){
+  # handle with loan
   loan <- as.double(loan)
-  APR <- as.double(APR)
+  # check if of numeric class
+  if (!is.numeric(loan) ){
+    loan = 250000.0; # set default
+  }
+
+  # handle with APR
+  # if character split into tokens (separator = ',')
+  if (is.character(APR)) {
+    APR <- unlist(strsplit(APR, split = ','))
+  }
+  # convert into numeric class
+  suppressWarnings(APR <- as.double(APR))
+  # remove NA's
+  APR <- APR[!is.na(APR)]
+  # check if empty, if yes set default
+  if (length(APR) == 0){
+    APR <- 4.0 # set default
+  }
+
+  # handle with breaks
+  if (!is.null(breaks)) {
+    # remove NA's
+    breaks <- breaks[!is.na(breaks)]
+    if (length(breaks) == 0){
+      breaks <- NULL
+    } else {
+      # split by tokens (separator = ',')
+      breaks <- unlist(strsplit(breaks, split = ','))
+      # convert into numeric class
+      suppressWarnings({
+        breaks <- as.double(breaks)
+      })
+      # remove NA's
+      breaks <- breaks[!is.na(breaks)]
+      # check if length == 0
+      if (length(breaks) == 0){
+         breaks <- NULL
+      }
+    }
+  }
   if(is.null(breaks)){
-    if (is.null(payment)){
-      return(mortgagePaymentFixed(loan = loan, APR = APR, period = period));
+    if (is.na(payment)){
+      return(mortgagePaymentFixed(loan = loan, APR = APR[1], period = period));
     } else{
-      return(mortgagePaymentFixed(loan = loan, APR = APR, period = period, payment = payment));
+      return(mortgagePaymentFixed(loan = loan, APR = APR[1], period = period, payment = payment));
     }
   }
   # TODO: check order of breaks
+  # sorting breakes in the ascending order
+  breaks <- breaks[order(breaks)]
+  # check consistency of APR's and breaks: should be length(breaks) + 1 == length(APR)
   if (length(breaks) + 1 > length(APR) ){
     lastAPR <- APR[length(APR)]
     APR <- c(APR, rep(lastAPR, length(breaks) - length(APR) + 1))
@@ -91,6 +140,7 @@ mortgagePaymentAdjusted <- function(loan = 250000.00, APR = 4.0, period = 360, b
   if (length(breaks) + 1 < length(APR)){
     APR <- APR[1:(length(breaks) + 1)]
   }
+
   if(!is.null(payment)){
     tmp <- mortgagePaymentFixed(loan = loan, APR = APR[1], period = period, payment = payment);
   } else {
@@ -98,6 +148,7 @@ mortgagePaymentAdjusted <- function(loan = 250000.00, APR = 4.0, period = 360, b
   }
   result <- tmp[1:(breaks[1] + 1),]
 
+  # calculate data for each month
   debt <- tail(result$debt, n=1)[1]
   for(i in 1:length(breaks)){
     if(!is.null(payment)){
@@ -112,8 +163,10 @@ mortgagePaymentAdjusted <- function(loan = 250000.00, APR = 4.0, period = 360, b
     }
     debt <- tail(result$debt, n=1)
   }
+  # rename rows
   rownames(result) <- 0:period
-  # add some attributes to result
+
+  # add attributes to result (these are used in the funnction loan.summary)
   attr(result, "APR") <- APR
   attr(result, "breaks") <- breaks
   attr(result, "loan") <- loan
