@@ -29,13 +29,21 @@ mortgagePaymentFixed <- function(loan = 250000.00, APR = 4.0, period = 360, paym
   APR <- as.double(APR)
   debt <- c(loan) # debt variable starts from the beginning of the first month
   interest <- c(0)
+  minpayment <- round(loan*(APR/1200 * (1+APR/1200)^period)/((1+APR/1200)^period-1),2);
   if(is.null(payment)){
     payment <- round(loan*(APR/1200 * (1+APR/1200)^period)/((1+APR/1200)^period-1),2)
     payment <- c(0, rep(payment, period) )
   } else {
     if (is.numeric(payment))  {
-      last <- payment[length(payment)]
-      payment <- c(0, rep(payment, period - length(payment) + 1))
+      payment <- payment[1]; # take only first element
+      # the payment can't be less than minpayment
+      if (payment < minpayment){
+        payment <- minpayment
+      }
+      # convert payment into a list
+      payment <- c(0, rep(payment, period))
+      #last <- payment[length(payment)]
+      #payment <- c(0, rep(payment, period - length(payment) + 1))
     }
   }
   for(i in 1:period){
@@ -120,7 +128,7 @@ loan.summary<-function(df){
   cat("LOAN SUMMARY:", fill = TRUE)
   printf("Loan ammount: %s\n", format(attributes(df)$loan, big.mark = ',', nsmall = 2), fill=TRUE)
   cat("", fill = TRUE)
-  printf("APR: %s\n", format(attributes(df)$APR,  big.mark = ',', nsmall = 2), fill=TRUE)
+  printf("APR: %s\n", paste(format(attributes(df)$APR,  big.mark = ',', nsmall = 2), collapse = " "), fill=TRUE)
   cat("", fill = TRUE)
   cat("Monthly payment:", fill=TRUE)
   ind <- which (df$payment[c(-length(df$payment))] - df$payment[-1] != 0)
