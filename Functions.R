@@ -29,10 +29,14 @@ mortgagePaymentFixed <- function(loan = 250000.00, APR = 4.0, period = 360, paym
   if (!is.numeric(loan) ){
     loan = 250000.0; # set default
   }
-  suppressWarnings(APR <- as.double(APR))
-  if (is.na(APR[1])){
+  # convert into numeric
+  suppressWarnings(
+    APR <- as.double(APR[1])
+                  )
+  if (is.na(APR)){
     APR <- 4.0; # set default
   }
+  APR <- APR[1]
   debt <- c(loan) # debt variable starts from the beginning of the first month
   interest <- c(0)
   minpayment <- round(loan*(APR/1200 * (1+APR/1200)^period)/((1+APR/1200)^period-1),2);
