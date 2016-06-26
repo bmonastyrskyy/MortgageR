@@ -204,12 +204,12 @@ plotPayment <- function(df){
   #df$prnc <- df$payment - df$interest
   df$month <- 0:(n-1)
   p <- ggplot(df, aes(x=month))
-  p <- p + geom_bar(aes(y=payment), stat = "identity", fill = "red", binwidth = 1, width = 1) +
-    geom_bar(aes(y=interest), stat = "identity", fill = "green", binwidth = 1, width = 1)
+  p <- p + geom_bar(aes(y=payment), stat = "identity", fill = "red", width = 1) +
+    geom_bar(aes(y=interest), stat = "identity", fill = "green", width = 1)
   print(p)
 }
 
-# The function generats the amortization plot
+# The function generates the amortization plot
 plotAmortization <- function(df){
   n <- nrow(df)
   df$prnc <- cumsum(df$payment - df$interest)
